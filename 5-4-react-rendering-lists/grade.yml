@@ -1,0 +1,56 @@
+name: Auto Grade
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 5-4-react-rendering-lists
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps (if any)
+        run: |
+          if [ -f package.json ]; then
+            (npm ci || npm install)
+          fi
+
+      - name: Set Due Date env
+        run: echo "DUE_DATE=2025-10-08T23:59:59+03:00" >> $GITHUB_ENV
+
+      - name: Run grader
+        env:
+          DUE_DATE: ${{ env.DUE_DATE }}
+          SUBMITTED_AT: ${{ github.event.head_commit.timestamp }}
+        run: |
+          set -e
+          node scripts/grade.cjs --root . --config grade.yml --submittedAt "${SUBMITTED_AT}" | tee grade-console.txt
+
+      - name: Upload grading artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade
+          path: |
+            grade-report.md
+            grade-report.json
+            grade-console.txt
+
+      - name: Post summary
+        if: always()
+        run: |
+          if [ -f grade-report.md ]; then
+            cat grade-report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No grade report produced." >> $GITHUB_STEP_SUMMARY
+          fi
