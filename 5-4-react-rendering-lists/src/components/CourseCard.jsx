@@ -40,7 +40,7 @@ export default function CourseCard({ course, index, onMutateCourse }) {
         {/* 📘 TASK 2 — Render Tasks for Each Course */}
         {/* 🔎 Anchor: You’ll write your code right inside this list. */}
         <ul className="tasks">
-          {/* TODO: course.tasks.map(task => <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />) */}
+          {course.tasks.map(task => <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />)}
         </ul>
       </section>
 
